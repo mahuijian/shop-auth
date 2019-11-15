@@ -66,8 +66,8 @@ public class TokenServiceImpl implements TokenService {
         // 1.检验token是否模拟
         final Claims claims = JwtUtil.verifyAndGetClaimsByToken(token);
         if (Objects.isNull(claims)) {
-            log.info("恶意请求");
-            return ResponseObject.fail(500, "恶意请求");
+            log.info("恶意请求,token已经过期或者不存在.token:{} ", token);
+            return ResponseObject.fail(401, "恶意请求,token已经过期或者不存在!");
         }
         String userId = claims.get("userId").toString();
         // 2.时间与服务器时间相差60秒,就是恶意请求

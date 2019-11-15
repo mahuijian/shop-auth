@@ -6,6 +6,7 @@ import com.mhj.entity.dto.TokenDTO;
 import com.mhj.service.TokenService;
 import com.mhj.web.ResponseObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -26,7 +27,10 @@ public class TokenController {
     }
 
     @PostMapping("/verify")
-    public ResponseObject<UserInfoVO> verifyWriteRole(@RequestBody @Valid TokenDTO tokenDTO) {
+    public ResponseObject<UserInfoVO> verifyWriteRole(@RequestBody @Valid TokenDTO tokenDTO, BindingResult result) {
+        if (result.hasErrors()){
+            return ResponseObject.fail(400,result.getAllErrors().get(0).getDefaultMessage());
+        }
         return tokenService.verifyWriteRole(tokenDTO);
     }
 
