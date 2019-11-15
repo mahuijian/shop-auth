@@ -5,7 +5,9 @@ import com.google.common.collect.Maps;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.mhj.Utils.JwtUtil;
+import com.mhj.entity.dto.UserInfoVO;
 import com.mhj.entity.vo.TokenVO;
+import com.mhj.entity.dto.TokenDTO;
 import com.mhj.web.ResponseObject;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 鉴权服务，此处的校验接口应在网关处拦截过滤校验，并对参数进行验证
+ *
  * @author mhj
  * @date 2019/11/15
  */
@@ -52,7 +56,13 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public ResponseObject verifyWriteRole(String token, long timestamp, String nonce, String signature) {
+    public ResponseObject<UserInfoVO> verifyWriteRole(TokenDTO tokenDTO) {
+        String token = tokenDTO.getToken();
+
+        Long timestamp = tokenDTO.getTimestamp();
+
+        String signature = tokenDTO.getSignature();
+        String nonce = tokenDTO.getNonce();
         // 1.检验token是否模拟
         final Claims claims = JwtUtil.verifyAndGetClaimsByToken(token);
         if (Objects.isNull(claims)) {
@@ -64,27 +74,28 @@ public class TokenServiceImpl implements TokenService {
         Instant instant = Instant.ofEpochMilli(timestamp);
         LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
         LocalDateTime now = LocalDateTime.now();
-        if (now.isAfter(dateTime.plusSeconds(60))) {
+        if (now.isAfter(dateTime.plusSeconds(900000))) {
             log.error("恶意请求,请求时间过期.token:{}, userId:{}, time:{}, 当前时间:{}", token, userId, dateTime, now);
             return ResponseObject.unauthorized("恶意请求");
         }
+
         // 3.校验nonce是否被重放
-        String nonceCache = (String) redisTemplate.opsForValue().get("auth_nonce");
+        String nonceCache = (String) redisTemplate.opsForValue().get("auth_nonce" + nonce);
         if (!Strings.isNullOrEmpty(nonceCache)) {
             log.error("恶意请求,请求被重放.token:{}, userId:{}, nonce:{}", token, userId, nonce);
             return ResponseObject.unauthorized("恶意请求");
         }
         // 存放20分钟
-        redisTemplate.opsForValue().set("auth_nonce", "AUTH_NONCE_" + token + "_" + nonce, 20, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set("auth_nonce" + nonce, "AUTH_NONCE_" + token + "_" + nonce, 20, TimeUnit.MINUTES);
 
         HashCode code = Hashing.sha256().hashString(timestamp + "#" + nonce + claims.get("salt"), StandardCharsets.UTF_8);
         if (!signature.equals(code.toString())) {
             log.error("恶意请求,签名被伪造.token:{}, userId:{}, nonce:{}, signature:{}", token, userId, nonce, signature);
             return ResponseObject.unauthorized("恶意请求");
         }
+        // 4.参数的校验 未做
 
-        // 4.参数的校验
-        return null;
+        return ResponseObject.success(UserInfoVO.builder().userId(userId).userName(claims.get("userName").toString()).build());
     }
 
     private static String salt() {

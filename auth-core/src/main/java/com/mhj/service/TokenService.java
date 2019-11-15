@@ -1,6 +1,8 @@
 package com.mhj.service;
 
+import com.mhj.entity.dto.UserInfoVO;
 import com.mhj.entity.vo.TokenVO;
+import com.mhj.entity.dto.TokenDTO;
 import com.mhj.web.ResponseObject;
 
 /**
@@ -21,11 +23,8 @@ public interface TokenService {
     /**
      * 校验请求是否合理
      *
-     * @param token     token
-     * @param timestamp 时间戳
-     * @param nonce     随机数
-     * @param signature 签名
+     * @param tokenDTO token
      * @return ResponseObject
      */
-    ResponseObject verifyWriteRole(String token, long timestamp, String nonce, String signature);
+    ResponseObject<UserInfoVO> verifyWriteRole(TokenDTO tokenDTO);
 }

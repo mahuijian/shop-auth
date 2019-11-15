@@ -10,8 +10,6 @@ import org.springframework.http.HttpStatus;
  */
 public class ResponseObject<T> extends AbstractResponse{
     private T data;
-    public static final ResponseObject UNAUTHORIZED = unauthorized();
-    public static final ResponseObject NOT_FOUND = notFound();
 
     public ResponseObject() {
     }
@@ -119,6 +117,6 @@ public class ResponseObject<T> extends AbstractResponse{
 
     @Override
     public String toString() {
-        return "ResponseObject{data=" + this.data + ", status=" + this.status + ", message='" + this.message + '\'' + ", path='" + this.path + '\'' + '}';
+        return "ResponseObject{data=" + this.data + ", status=" + this.status + ", message='" + this.message + '}';
     }
 }
