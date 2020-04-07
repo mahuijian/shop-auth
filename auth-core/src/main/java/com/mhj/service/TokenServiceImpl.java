@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
-import com.mhj.Utils.JwtUtil;
+import com.mhj.utils.JwtUtil;
 import com.mhj.entity.dto.UserInfoVO;
 import com.mhj.entity.vo.TokenVO;
 import com.mhj.entity.dto.TokenDTO;

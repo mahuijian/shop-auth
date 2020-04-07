@@ -1,4 +1,4 @@
-package com.mhj.Utils;
+package com.mhj.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
